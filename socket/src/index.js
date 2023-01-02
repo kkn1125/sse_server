@@ -34,7 +34,7 @@ const {
 } = require("./services/query.service");
 const { dev } = require("./utils/tools");
 const port = Number(process.env.PORT);
-
+let sended = null;
 const app = uWs
   .App()
   .ws("/*", {
@@ -118,18 +118,22 @@ const app = uWs
     open: (ws) => {
       console.log("A WebSocket connected with URL: " + ws.url);
       ws.subscribe(`${ws.space.pk}-${ws.channel.pk}`);
-      setInterval(async () => {
-        try {
-          const locations = await queryService.readLocations({
-            uuid: ws.user.uuid,
-          });
-          console.log(locations);
-          app.publish(
-            `${ws.space.pk}-${ws.channel.pk}`,
-            JSON.stringify(locations)
-          );
-        } catch (e) {}
-      }, 16);
+      sended = true;
+      // setInterval(async () => {
+        // try {
+        //   const locations = await queryService.readLocations({
+        //     uuid: ws.user.uuid,
+        //   });
+        //   if (sended !== locations) {
+        //     // console.log(locations);
+        //     app.publish(
+        //       `${ws.space.pk}-${ws.channel.pk}`,
+        //       JSON.stringify(locations)
+        //     );
+        //     sended = locations;
+        //   }
+        // } catch (e) {}
+      // }, 16);
     },
     message: (ws, message, isBinary) => {
       /* Ok is false if backpressure was built up, wait for drain */
@@ -141,7 +145,9 @@ const app = uWs
           channel: ws.channel.pk,
           space: ws.space.pk,
         });
-        queryService.updateLocation(json);
+        queryService.updateLocation(json).then(() => {
+          sended = true;
+        });
       }
     },
     drain: (ws) => {
