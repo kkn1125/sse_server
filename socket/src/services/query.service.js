@@ -2,6 +2,28 @@ const { convertRegionName, dev } = require("../utils/tools.js");
 const { sql } = require("../database/mariadb.js");
 const Query = require("../models/Query.js");
 
+const playersQueries = `SELECT 
+  users.id,
+  users.uuid,
+  users.nickname,
+  locations.space_id,
+  locations.channel_id,
+  locations.pox,
+  locations.poy,
+  locations.poz,
+  locations.roy
+FROM
+  allocation
+    LEFT JOIN
+  users ON allocation.user_id = users.id
+    LEFT JOIN
+  locations ON allocation.user_id = locations.user_id
+WHERE
+  allocation.space_id = ?
+AND 
+  allocation.channel_id = ?
+AND allocation.type = 'player'`;
+
 Query.updateLocation = async (req, res, next) => {
   try {
     const { pox, poy, poz, roy, id, channel, space } = req;
@@ -27,6 +49,32 @@ Query.logout = async (req, res, next) => {
   } catch (e) {
     console.log(e);
   }
+};
+
+Query.readLocations = async (req, res, next) => {
+  const data = req;
+  const [user] = await sql
+    .promise()
+    .query(`SELECT id FROM users WHERE uuid = ?`, [data.uuid]);
+  const [space] = await sql.promise().query(
+    `SELECT spaces.* FROM spaces
+      LEFT JOIN allocation
+      ON allocation.space_id = spaces.id
+      WHERE allocation.user_id = ?`,
+    [user[0].id]
+  );
+  const [channel] = await sql.promise().query(
+    `SELECT channels.* FROM channels
+      LEFT JOIN allocation
+      ON allocation.channel_id = channels.id
+      WHERE allocation.user_id = ?`,
+    [user[0].id]
+  );
+  const [locations] = await sql
+    .promise()
+    .query(playersQueries, [space[0].id, channel[0].id]);
+    console.log(locations)
+  return locations;
 };
 
 /* upgrade intial informations */

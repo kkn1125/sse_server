@@ -93,11 +93,12 @@ function connectSocket(connectionData) {
       const json = JSON.parse(data);
       // console.log(json);
       if (json instanceof Array) {
-        console.log("받음", json);
+        // console.log("받음", json);
         for (let u of json) {
-          if (users.has(u.id)) continue;
+          // if (users.has(u.id)) continue;
           users.set(u.id, Object.assign(users.get(u.id) || {}, u));
         }
+        // console.log(users)
       } else if (json.type === "login") {
         for (let u of json.players) {
           if (users.has(u.id)) continue;
@@ -164,27 +165,27 @@ function createLogin() {
           window.removeEventListener("click", login);
           loginModal.remove();
 
-          const source = new EventSource(
-            `http://localhost:5000/query/sse?uuid=${userDataMap.user.uuid}`,
-            {
-              withCredentials: false,
-            }
-          );
+          // const source = new EventSource(
+          //   `http://localhost:5000/query/sse?uuid=${userDataMap.user.uuid}`,
+          //   {
+          //     withCredentials: false,
+          //   }
+          // );
 
-          source.addEventListener("open", (root, e) => {
-            console.log(root, e);
-          });
+          // source.addEventListener("open", (root, e) => {
+          //   console.log(root, e);
+          // });
 
-          source.addEventListener("message", (message) => {
-            const { data } = message;
-            const userList = JSON.parse(data);
-            for (let user of userList) {
-              users.set(user.id, user);
-            }
+          // source.addEventListener("message", (message) => {
+          //   const { data } = message;
+          //   const userList = JSON.parse(data);
+          //   for (let user of userList) {
+          //     users.set(user.id, user);
+          //   }
 
-            // Display the event data in the `content` div
-            // document.querySelector("#content").innerHTML = event.data;
-          });
+          //   // Display the event data in the `content` div
+          //   // document.querySelector("#content").innerHTML = event.data;
+          // });
           // axios
           //   .post("/query/sse", {
           //     user: userDataMap.user,
@@ -233,8 +234,8 @@ function clearScene() {
 
 function userUpdate() {
   for (let u of users.values()) {
-    console.log(u);
     ctx.fillStyle = "black";
+    console.log(u.pox, u.poy);
     ctx.fillRect(u.pox, u.poy, size, size);
     ctx.fillStyle = "orange";
     ctx.fillText(u.nickname, u.pox + size / 2, u.poy - 5, size, size);
@@ -244,7 +245,8 @@ function userUpdate() {
 
 function moving(time) {
   for (let u of users.values()) {
-    if (u.id == userDataMap.user?.pk) {
+    console.log(userDataMap);
+    if (u.id === userDataMap.user?.pk) {
       if (direction.w || direction.s || direction.a || direction.d) {
         if (direction.w) {
           Object.assign(u, { poy: u.poy - SPEED });
