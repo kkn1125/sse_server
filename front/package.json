@@ -1,0 +1,21 @@
+{
+  "name": "front",
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=devlopment MODE=local vite --config vite.config.js"
+  },
+  "dependencies": {
+    "axios": "^1.2.2",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.0.3",
+    "protobufjs": "^7.1.2",
+    "sass": "^1.57.1",
+    "vite": "^4.0.3",
+    "ws": "^8.11.0"
+  }
+}
