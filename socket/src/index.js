@@ -34,7 +34,7 @@ const {
 } = require("./services/query.service");
 const { dev } = require("./utils/tools");
 const port = Number(process.env.PORT);
-
+let sended = null;
 const app = uWs
   .App()
   .ws("/*", {

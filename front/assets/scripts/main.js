@@ -235,7 +235,7 @@ function clearScene() {
 function userUpdate() {
   for (let u of users.values()) {
     ctx.fillStyle = "black";
-    console.log(u.pox, u.poy);
+    // console.log(u.pox, u.poy);
     ctx.fillRect(u.pox, u.poy, size, size);
     ctx.fillStyle = "orange";
     ctx.fillText(u.nickname, u.pox + size / 2, u.poy - 5, size, size);
@@ -245,7 +245,7 @@ function userUpdate() {
 
 function moving(time) {
   for (let u of users.values()) {
-    console.log(userDataMap);
+    // console.log(userDataMap);
     if (u.id === userDataMap.user?.pk) {
       if (direction.w || direction.s || direction.a || direction.d) {
         if (direction.w) {

@@ -22,7 +22,7 @@ queryRouter.post("/locations", (req, res, next) => {
 
 queryRouter.get("/sse", (req, res, next) => {
   const data = req.query;
-  console.log("data", data);
+  // console.log("data", data);
   if (blocklist.has(data.uuid)) {
     res.status(400).json({
       ok: false,
