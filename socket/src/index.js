@@ -117,31 +117,21 @@ const app = uWs
     },
     open: (ws) => {
       console.log("A WebSocket connected with URL: " + ws.url);
+      ws.subscribe("broadcast");
       ws.subscribe(`${ws.space.pk}-${ws.channel.pk}`);
-      setInterval(async () => {
-        try {
-          const locations = await queryService.readLocations({
-            uuid: ws.user.uuid,
-          });
-          console.log(locations);
-          app.publish(
-            `${ws.space.pk}-${ws.channel.pk}`,
-            JSON.stringify(locations)
-          );
-        } catch (e) {}
-      }, 16);
     },
     message: (ws, message, isBinary) => {
       /* Ok is false if backpressure was built up, wait for drain */
       if (isBinary) {
-        console.log(message);
         const json = Message.decode(new Uint8Array(message)).toJSON();
-        console.log(json);
         Object.assign(json, {
           channel: ws.channel.pk,
           space: ws.space.pk,
         });
         queryService.updateLocation(json);
+      } else {
+        const json = JSON.parse(message);
+        console.log(json);
       }
     },
     drain: (ws) => {

@@ -1,3 +1,22 @@
+import path from "path";
+import dotenv from "dotenv";
+
+const mode = process.env.NODE_ENV;
+const MODE = process.env.MODE;
+const __dirname = path.resolve();
+
+if (mode === "development") {
+  dotenv.config({
+    path: path.join(__dirname, `.env`),
+  });
+  dotenv.config({
+    path: path.join(__dirname, `.env.${mode}.${MODE}`),
+  });
+}
+
+const host = process.env.HOST;
+const port = process.env.PORT;
+
 const domains = [`naver.com`, `daum.net`, `google.com`];
 const createEmail = () =>
   parseInt(Math.random() * 100_000)
@@ -63,4 +82,4 @@ const convertRegionName = (locale) => {
 const capitalize = (words) =>
   words[0].toUpperCase() + words.slice(1).toLowerCase();
 
-export { createEmail, dev, convertRegionName, capitalize };
+export { createEmail, dev, convertRegionName, capitalize, host, port };
