@@ -1,8 +1,8 @@
 import express from "express";
-import queryController from "./controller/query.controller.js";
+import queryController from "./src/controller/query.controller.js";
 
 import cors from "cors";
-import { port } from "./utils/tools.js";
+import { port } from "./src/utils/tools.js";
 
 const app = express();
 

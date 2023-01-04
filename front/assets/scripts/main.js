@@ -30,7 +30,7 @@ const direction = {
 app.width = innerWidth;
 app.height = innerHeight;
 
-const users = new Map();
+let users = new Map();
 // for (let i = 0; i < 50; i++) {
 //   users.set(i, {
 //     nickname: "123",
@@ -42,6 +42,7 @@ const users = new Map();
 // }
 const size = 30;
 const userDataMap = {};
+let ws = null;
 
 function attachUser() {
   axios
@@ -52,6 +53,16 @@ function attachUser() {
       const { data } = result;
       Object.assign(userDataMap, data);
       sockets.set(data.user.uuid, connectSocket(userDataMap));
+      for (let user of userDataMap.players) {
+        users.set(user.id, {
+          id: user.id,
+          nickname: user.nickname,
+          pox: user.pox,
+          poy: user.poy,
+          poz: user.poz,
+          roy: user.roy,
+        });
+      }
     });
 }
 
@@ -71,7 +82,7 @@ function connectSocket(connectionData) {
       uuid: connectionData.user.uuid,
     }).trim()
   );
-  const ws = new WebSocket(`ws://localhost:${socket.port}/?q=${q}`);
+  ws = new WebSocket(`ws://localhost:${socket.port}/?q=${q}`);
   ws.binaryType = "arraybuffer";
   ws.onopen = (e) => {
     dev.alias("Socket").log("open");
@@ -79,6 +90,7 @@ function connectSocket(connectionData) {
   ws.onmessage = (message) => {
     const { data } = message;
     if (data instanceof ArrayBuffer) {
+      // locations
       for (let i = 0; i < Math.round(data.byteLength / packetLength); i++) {
         try {
           const json = Message.decode(
@@ -89,30 +101,44 @@ function connectSocket(connectionData) {
           console.error(e);
         }
       }
+    } else if (!isNaN(data)) {
+      if (Number(data) !== 0) {
+        // logout
+        console.log("logout", Number(data));
+        users.delete(Number(data));
+      } else {
+        axios
+          .post("/query/login", {
+            pk: userDataMap.user.pk,
+            nickname: userDataMap.user.nickname,
+            password: userDataMap.user.password,
+            pox: app.width / 2 - size / 2,
+            poy: app.height / 2 - size / 2,
+            poz: 0,
+            roy: (Math.PI / 180) * 90,
+          })
+          .then(({ data }) => {
+            for (let user of data.players) {
+              if (!users.has(user.id)) {
+                users.set(user.id, user);
+              }
+            }
+          });
+      }
     } else {
+      // login, players
       const json = JSON.parse(data);
-      // console.log(json);
       if (json instanceof Array) {
-        // console.log("받음", json);
         for (let u of json) {
           // if (users.has(u.id)) continue;
           users.set(u.id, Object.assign(users.get(u.id) || {}, u));
         }
-        // console.log(users)
-      } else if (json.type === "login") {
+      } /* else if (json.type === "login") {
         for (let u of json.players) {
           if (users.has(u.id)) continue;
           users.set(u.id, Object.assign(users.get(u.id) || {}, u));
         }
-      } else if (json.type === "logout") {
-        console.log("logout", json);
-        for (let u of users.values()) {
-          users.delete(u.id);
-        }
-        for (let u of json.players) {
-          users.set(u.id, u);
-        }
-      }
+      } */
     }
   };
   ws.onerror = (e) => {
@@ -149,8 +175,8 @@ function createLogin() {
     const nickname = nicknameEl.value;
     const password = passwordEl.value;
     if (nickname && password) {
-      axios
-        .post(`/query/login`, {
+      ws.send(
+        JSON.stringify({
           type: "login",
           pk: userDataMap.user.pk,
           nickname: nickname,
@@ -160,42 +186,10 @@ function createLogin() {
           poz: 0,
           roy: (Math.PI / 180) * 90,
         })
-        .then((result) => {
-          console.log(result.data);
-          window.removeEventListener("click", login);
-          loginModal.remove();
+      );
 
-          // const source = new EventSource(
-          //   `http://localhost:5000/query/sse?uuid=${userDataMap.user.uuid}`,
-          //   {
-          //     withCredentials: false,
-          //   }
-          // );
-
-          // source.addEventListener("open", (root, e) => {
-          //   console.log(root, e);
-          // });
-
-          // source.addEventListener("message", (message) => {
-          //   const { data } = message;
-          //   const userList = JSON.parse(data);
-          //   for (let user of userList) {
-          //     users.set(user.id, user);
-          //   }
-
-          //   // Display the event data in the `content` div
-          //   // document.querySelector("#content").innerHTML = event.data;
-          // });
-          // axios
-          //   .post("/query/sse", {
-          //     user: userDataMap.user,
-          //     space: userDataMap.space,
-          //     channel: userDataMap.channel,
-          //   })
-          //   .then((result) => {
-          //     console.log(result);
-          //   });
-        });
+      window.removeEventListener("click", login);
+      loginModal.remove();
     }
   }
   window.addEventListener("click", login);

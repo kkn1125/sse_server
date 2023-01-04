@@ -11,9 +11,11 @@ export default defineConfig(({ command, mode, ssrBuild }) => {
   dotenv.config({
     path: path.join(path.resolve(), ".env"),
   });
-  dotenv.config({
-    path: path.join(path.resolve(), `.env.${mode}.${MODE}`),
-  });
+  if (mode === "development") {
+    dotenv.config({
+      path: path.join(path.resolve(), `.env.${mode}.${MODE}`),
+    });
+  }
 
   return {
     // vite config

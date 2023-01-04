@@ -429,6 +429,7 @@ async function autoInsertUser(data, locale, dataMap) {
 }
 
 Query.attach = async (req, res, next) => {
+  console.log(req.body);
   try {
     const data = req.body;
     const dataMap = {};
@@ -529,6 +530,7 @@ Query.attach = async (req, res, next) => {
       space: finalInformations.space,
       channel: finalInformations.channel,
       user: finalInformations.user,
+      players: finalInformations.players,
     });
   } catch (e) {
     res.status(500).json({
@@ -585,39 +587,6 @@ Query.login = async (req, res, next) => {
       ok: true,
       pk: pk,
       type: "login",
-      players: readPlayers,
-    });
-  } catch (e) {
-    res.status(500).json({
-      ok: false,
-    });
-  }
-};
-
-Query.logout = async (req, res, next) => {
-  try {
-    const data = req.body;
-    const [userInfo] = await sql.promise().query(
-      `SELECT space_id, channel_id, user_id
-      FROM allocation
-      WHERE user_id = ?`,
-      [data.pk]
-    );
-
-    await sql.promise().query(`DELETE FROM users WHERE id = ?`, [data.pk]);
-
-    const [readPlayers] =
-      userInfo.length === 0
-        ? [[]]
-        : await sql
-            .promise()
-            .query(playersQueries, [
-              userInfo[0].space_id,
-              userInfo[0].channel_id,
-            ]);
-    console.log("logout players", readPlayers);
-    res.status(200).json({
-      ok: true,
       players: readPlayers,
     });
   } catch (e) {

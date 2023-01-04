@@ -24,7 +24,7 @@ AND
   allocation.channel_id = ?
 AND allocation.type = 'player'`;
 
-Query.updateLocation = async (req, res, next) => {
+Query.updateLocation = async (req) => {
   try {
     const { pox, poy, poz, roy, id, channel, space } = req;
     await sql.promise().query(
@@ -43,15 +43,15 @@ Query.updateLocation = async (req, res, next) => {
   }
 };
 
-Query.logout = async (req, res, next) => {
+Query.logout = async (id, sid, cid) => {
   try {
-    await sql.promise().query(`DELETE FROM users WHERE id = ?`, [req]);
+    await sql.promise().query(`DELETE FROM users WHERE id = ?`, [id]);
   } catch (e) {
     console.log(e);
   }
 };
 
-Query.readLocations = async (req, res, next) => {
+Query.readLocations = async (req) => {
   const data = req;
   const [user] = await sql
     .promise()
@@ -73,7 +73,7 @@ Query.readLocations = async (req, res, next) => {
   const [locations] = await sql
     .promise()
     .query(playersQueries, [space[0].id, channel[0].id]);
-    console.log(locations)
+  console.log(locations);
   return locations;
 };
 
