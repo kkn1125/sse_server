@@ -396,14 +396,14 @@ function updateLocation(user) {
   // ]);
   // console.log(a);
   const a = new Uint32Array([
-    '0x'+user.id.toString(36),
-    '0x'+user.pox.toString(36),
+    user.id.toString(36),
+    user.pox.toString(36),
     // (user.pox - parseInt(user.pox)) * 10 * (poxL - 1).toString(36),
-    '0x'+user.poy.toString(36),
+    user.poy.toString(36),
     // (user.poy - parseInt(user.poy)) * 10 * (poyL - 1).toString(36),
-    '0x'+user.poz.toString(36),
+    user.poz.toString(36),
     // (user.poz - parseInt(user.poz)) * 10 * (pozL - 1).toString(36),
-    '0x'+user.roy.toString(36),
+    user.roy.toString(36),
     // (user.roy - parseInt(user.roy)) * 10 * (royL - 1).toString(36),
   ]);
   console.log(a);
