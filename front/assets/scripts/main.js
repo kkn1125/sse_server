@@ -265,20 +265,165 @@ function moving(time) {
   }
 }
 
+// DataView.prototype.getUint64 = function (byteOffset, littleEndian) {
+//   // split 64-bit number into two 32-bit parts
+//   const left = this.getUint32(byteOffset, littleEndian);
+//   const right = this.getUint32(byteOffset + 4, littleEndian);
+
+//   // combine the two 32-bit values
+//   const combined = littleEndian
+//     ? left + 2 ** 32 * right
+//     : 2 ** 32 * left + right;
+
+//   if (!Number.isSafeInteger(combined))
+//     console.warn(combined, "exceeds MAX_SAFE_INTEGER. Precision may be lost");
+
+//   return combined;
+// };
+
+// // [byteArray, littleEndian, expectedValue]
+// const testValues = [
+//   // big-endian
+//   [
+//     new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff]),
+//     false,
+//     255,
+//   ],
+//   [
+//     new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff]),
+//     false,
+//     65535,
+//   ],
+//   [
+//     new Uint8Array([0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff]),
+//     false,
+//     4294967295,
+//   ],
+//   [
+//     new Uint8Array([0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00]),
+//     false,
+//     4294967296,
+//   ],
+//   [
+//     new Uint8Array([0x00, 0x1f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff]),
+//     false,
+//     9007199254740991,
+//   ], // maximum precision
+//   [
+//     new Uint8Array([0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+//     false,
+//     9007199254740992,
+//   ], // precision lost
+//   [
+//     new Uint8Array([0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01]),
+//     false,
+//     9007199254740992,
+//   ], // precision lost
+
+//   // little-endian
+//   [new Uint8Array([0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), true, 255],
+//   [
+//     new Uint8Array([0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]),
+//     true,
+//     65535,
+//   ],
+//   [
+//     new Uint8Array([0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00]),
+//     true,
+//     4294967295,
+//   ],
+//   [
+//     new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00]),
+//     true,
+//     4294967296,
+//   ],
+//   [
+//     new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00]),
+//     true,
+//     1099511627776,
+//   ],
+//   [
+//     new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00]),
+//     true,
+//     281474976710656,
+//   ],
+//   [
+//     new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x1f, 0x00]),
+//     true,
+//     9007199254740991,
+//   ], // maximum precision
+// ];
+
+// testValues.forEach(testGetUint64);
+
+// function testGetUint64([bytes, littleEndian, expectedValue]) {
+//   const val = new DataView(bytes.buffer).getUint64(0, littleEndian);
+//   console.log(val)
+//   console.log(
+//     val === expectedValue
+//       ? "pass"
+//       : "FAIL. expected " + expectedValue + ", received " + val
+//   );
+// }
+
 function updateLocation(user) {
-  sockets.get(userDataMap.user.uuid).send(
-    Message.encode(
-      new Message({
-        id: user.id,
-        // space: user.space_id,
-        // channel: user.channel_id,
-        pox: user.pox,
-        poy: user.poy,
-        poz: user.poz,
-        roy: user.roy,
-      })
-    ).finish()
-  );
+  // const a = new Uint32Array(9);
+  const encode = Message.encode(
+    new Message({
+      id: user.id,
+      // space: user.space_id,
+      // channel: user.channel_id,
+      pox: user.pox,
+      poy: user.poy,
+      poz: user.poz,
+      roy: user.roy,
+    })
+  ).finish();
+  const poxL = parseInt(user.pox).toString().length;
+  const poyL = parseInt(user.poy).toString().length;
+  const pozL = parseInt(user.poz).toString().length;
+  const royL = parseInt(user.roy).toString().length;
+  // a.set([
+  //   user.id,
+  //   user.pox,
+  //   (user.pox - parseInt(user.pox)) * 10 * (poxL - 1),
+  //   user.poy,
+  //   (user.poy - parseInt(user.poy)) * 10 * (poyL - 1),
+  //   user.poz,
+  //   (user.poz - parseInt(user.poz)) * 10 * (pozL - 1),
+  //   user.roy,
+  //   (user.roy - parseInt(user.roy)) * 10 * (royL - 1),
+  // ]);
+  // console.log(a);
+  const a = new Uint32Array([
+    '0x'+user.id.toString(36),
+    '0x'+user.pox.toString(36),
+    // (user.pox - parseInt(user.pox)) * 10 * (poxL - 1).toString(36),
+    '0x'+user.poy.toString(36),
+    // (user.poy - parseInt(user.poy)) * 10 * (poyL - 1).toString(36),
+    '0x'+user.poz.toString(36),
+    // (user.poz - parseInt(user.poz)) * 10 * (pozL - 1).toString(36),
+    '0x'+user.roy.toString(36),
+    // (user.roy - parseInt(user.roy)) * 10 * (royL - 1).toString(36),
+  ]);
+  console.log(a);
+  console.log(a.buffer);
+  // console.log(
+  //   new TextEncoder().encode(
+  //     user.id.toString(36),
+  //     user.pox.toString(36),
+  //     (user.pox - parseInt(user.pox)) * 10 * (poxL - 1).toString(36),
+  //     user.poy.toString(36),
+  //     (user.poy - parseInt(user.poy)) * 10 * (poyL - 1).toString(36),
+  //     user.poz.toString(36),
+  //     (user.poz - parseInt(user.poz)) * 10 * (pozL - 1).toString(36),
+  //     user.roy.toString(36),
+  //     (user.roy - parseInt(user.roy)) * 10 * (royL - 1).toString(36)
+  //   )
+  // );
+  console.log();
+
+  sockets.get(userDataMap.user.uuid).send(new Uint32Array(a.buffer));
 }
 
 function update(time) {
